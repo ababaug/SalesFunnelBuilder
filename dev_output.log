@@ -16,3 +16,4 @@
  GET /templates 200 in 233ms (next.js: 26ms, application-code: 207ms)
  GET /pricing 200 in 84ms (next.js: 11ms, application-code: 73ms)
 ✓ Compiled in 68ms
+✓ Compiled in 288ms
