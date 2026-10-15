@@ -3,8 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import {
   Form,
   FormControl,
@@ -26,26 +25,27 @@ const formSchema = z.object({
   }),
 });
 
-export function BusinessInfo({ funnelId, initialData }: { funnelId: string, initialData: any }) {
+export function BusinessInfo({ data, updateData, funnelId }: { data: any, updateData: (d: any) => void, funnelId: string }) {
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      businessName: "",
-      contactEmail: "",
+      businessName: data.businessName || "",
+      contactEmail: data.contactEmail || "",
     },
   });
 
-  // Simple autosave implementation on blur
   const handleSave = async () => {
     setIsSaving(true);
     const values = form.getValues();
-    // In a real app we'd save this to a JSON structure in the Funnel model
-    // Here we'll just repurpose the description field for the demo
-    const dataStr = JSON.stringify(values);
-    await saveFunnelDescription(funnelId, dataStr);
+    updateData(values); // Update React state
+
+    // Autosave stringified state
+    const merged = { ...data, ...values };
+    await saveFunnelDescription(funnelId, JSON.stringify(merged));
+
     setIsSaving(false);
     setSaveMessage("Saved");
     setTimeout(() => setSaveMessage(""), 2000);

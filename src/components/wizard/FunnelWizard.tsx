@@ -3,6 +3,13 @@
 import { useState, useEffect } from "react";
 import { BusinessInfo } from "./BusinessInfo";
 import { ProductInfo } from "./ProductInfo";
+import { Audience } from "./Audience";
+import { Pricing } from "./Pricing";
+import { MediaUpload } from "./MediaUpload";
+import { SocialProof } from "./SocialProof";
+import { Objective } from "./Objective";
+import { Branding } from "./Branding";
+import { FinalReview } from "./FinalReview";
 import { Button } from "@/components/ui/button";
 import { initiateGenerationJob, checkJobStatus } from "@/server/ai/generation-job";
 import { useRouter } from "next/navigation";
@@ -13,7 +20,21 @@ export function FunnelWizard({ funnelId, initialData }: { funnelId: string, init
   const [jobId, setJobId] = useState<string | null>(null);
   const [jobStatus, setJobStatus] = useState<string | null>(null);
   const router = useRouter();
-  const totalSteps = 2;
+
+  // Try to load parsed state from funnel description, else initialize empty
+  const [wizardData, setWizardData] = useState<any>(() => {
+    try {
+      return initialData?.description ? JSON.parse(initialData.description) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  const totalSteps = 9;
+
+  const updateData = (stepData: any) => {
+    setWizardData((prev: any) => ({ ...prev, ...stepData }));
+  };
 
   const nextStep = () => setStep((s) => Math.min(s + 1, totalSteps));
   const prevStep = () => setStep((s) => Math.max(s - 1, 1));
@@ -40,12 +61,7 @@ export function FunnelWizard({ funnelId, initialData }: { funnelId: string, init
 
   const handleGenerate = async () => {
     try {
-      // In a real app we'd aggregate all form data here.
-      // For this implementation, we assume the data is saved to the Funnel record during the steps.
-      // Since it's a demo, we'll parse the description field we used as a temporary store.
-      const parsedData = initialData?.description ? JSON.parse(initialData.description) : { fallback: true };
-
-      const result = await initiateGenerationJob(funnelId, parsedData);
+      const result = await initiateGenerationJob(funnelId, wizardData);
       setJobId(result.jobId);
       setJobStatus("PROCESSING");
     } catch (error) {
@@ -87,6 +103,21 @@ export function FunnelWizard({ funnelId, initialData }: { funnelId: string, init
     );
   }
 
+  const renderStep = () => {
+    switch (step) {
+      case 1: return <BusinessInfo data={wizardData} updateData={updateData} funnelId={funnelId} />;
+      case 2: return <ProductInfo data={wizardData} updateData={updateData} funnelId={funnelId} />;
+      case 3: return <Audience data={wizardData} updateData={updateData} />;
+      case 4: return <Pricing data={wizardData} updateData={updateData} />;
+      case 5: return <MediaUpload data={wizardData} updateData={updateData} />;
+      case 6: return <SocialProof data={wizardData} updateData={updateData} />;
+      case 7: return <Objective data={wizardData} updateData={updateData} />;
+      case 8: return <Branding data={wizardData} updateData={updateData} />;
+      case 9: return <FinalReview data={wizardData} />;
+      default: return null;
+    }
+  };
+
   return (
     <div className="max-w-3xl mx-auto mt-8">
       <div className="mb-8">
@@ -100,9 +131,8 @@ export function FunnelWizard({ funnelId, initialData }: { funnelId: string, init
         </div>
       </div>
 
-      <div className="bg-card border rounded-lg p-6 shadow-sm">
-        {step === 1 && <BusinessInfo funnelId={funnelId} initialData={initialData} />}
-        {step === 2 && <ProductInfo funnelId={funnelId} initialData={initialData} />}
+      <div className="bg-card border rounded-lg p-6 shadow-sm min-h-[400px]">
+        {renderStep()}
       </div>
 
       <div className="flex justify-between mt-6">

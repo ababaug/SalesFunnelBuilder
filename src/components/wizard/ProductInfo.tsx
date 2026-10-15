@@ -4,11 +4,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -16,20 +14,37 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { saveFunnelDescription } from "@/server/funnels";
 
 const formSchema = z.object({
   productName: z.string().min(2),
   productDescription: z.string().min(10),
 });
 
-export function ProductInfo({ funnelId, initialData }: { funnelId: string, initialData: any }) {
+export function ProductInfo({ data, updateData, funnelId }: { data: any, updateData: (d: any) => void, funnelId: string }) {
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState("");
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      productName: "",
-      productDescription: "",
+      productName: data.productName || "",
+      productDescription: data.productDescription || "",
     },
   });
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    const values = form.getValues();
+    updateData(values);
+
+    const merged = { ...data, ...values };
+    await saveFunnelDescription(funnelId, JSON.stringify(merged));
+
+    setIsSaving(false);
+    setSaveMessage("Saved");
+    setTimeout(() => setSaveMessage(""), 2000);
+  };
 
   return (
     <div className="space-y-6">
@@ -40,8 +55,12 @@ export function ProductInfo({ funnelId, initialData }: { funnelId: string, initi
         </p>
       </div>
 
+      <div className="flex justify-end text-sm text-muted-foreground h-5">
+        {isSaving ? "Saving..." : saveMessage}
+      </div>
+
       <Form {...form}>
-        <form className="space-y-4">
+        <form className="space-y-4" onBlur={handleSave}>
           <FormField
             control={form.control}
             name="productName"
