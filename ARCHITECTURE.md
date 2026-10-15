@@ -33,7 +33,7 @@ The Prisma schema includes models for:
 ## Phase Status
 
 - [x] Phase 1 - Repository analysis and architecture (Initialize next.js, UI, tests, DB schema)
-- [ ] Phase 2 - Design system and marketing website
+- [x] Phase 2 - Design system and marketing website
 - [ ] Phase 3 - Authentication and workspaces
 - [ ] Phase 4 - Dashboard and funnel wizard
 - [ ] Phase 5 - AI generation engine
