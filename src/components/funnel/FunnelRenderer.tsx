@@ -7,11 +7,12 @@ import { FaqSection } from "./sections/FaqSection";
 import { FinalCtaSection } from "./sections/FinalCtaSection";
 
 interface FunnelRendererProps {
+  funnelId?: string;
   sections: any[];
   isEditing?: boolean;
 }
 
-export function FunnelRenderer({ sections, isEditing = false }: FunnelRendererProps) {
+export function FunnelRenderer({ funnelId, sections, isEditing = false }: FunnelRendererProps) {
   if (!sections || sections.length === 0) {
     return <div className="p-12 text-center text-muted-foreground">No content generated yet.</div>;
   }
@@ -35,11 +36,11 @@ export function FunnelRenderer({ sections, isEditing = false }: FunnelRendererPr
           case "FEATURES":
             return <FeaturesSection key={section.id} content={content} isEditing={isEditing} />;
           case "OFFER":
-            return <OfferSection key={section.id} content={content} isEditing={isEditing} />;
+            return <OfferSection key={section.id} content={content} isEditing={isEditing} funnelId={funnelId} />;
           case "FAQ":
             return <FaqSection key={section.id} content={content} isEditing={isEditing} />;
           case "FINAL_CTA":
-            return <FinalCtaSection key={section.id} content={content} isEditing={isEditing} />;
+            return <FinalCtaSection key={section.id} content={content} isEditing={isEditing} funnelId={funnelId} />;
           default:
             return (
               <div key={section.id} className="p-4 border border-dashed border-red-500 m-4 text-center">

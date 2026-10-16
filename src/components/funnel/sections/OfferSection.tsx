@@ -1,13 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { OrderForm } from "../OrderForm";
+import { useState } from "react";
 
-export function OfferSection({ content, isEditing }: { content: any; isEditing?: boolean }) {
+export function OfferSection({ content, isEditing, funnelId }: { content: any; isEditing?: boolean; funnelId?: string }) {
   const price = content.price ?? 99;
   const originalPrice = content.originalPrice ?? 199;
   const currency = content.currency || "$";
+  const [showOrderForm, setShowOrderForm] = useState(false);
 
   return (
-    <section className="w-full py-12 md:py-24 relative group">
+    <section className="w-full py-12 md:py-24 relative group bg-muted/10">
       {isEditing && (
         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
            <Button variant="outline" size="sm">Edit Section</Button>
@@ -33,10 +36,29 @@ export function OfferSection({ content, isEditing }: { content: any; isEditing?:
                 ✓ {content.guaranteeText}
               </p>
             )}
+
+            {!isEditing && showOrderForm ? (
+              <OrderForm
+                funnelId={funnelId || ""}
+                productName={content.headline || "Offer"}
+                price={price}
+                currency={currency}
+                ctaText={content.ctaText}
+              />
+            ) : null}
+
+            {(!showOrderForm || isEditing) && (
+              <div className="w-full mt-6">
+                <Button
+                  size="lg"
+                  className="w-full text-lg h-14"
+                  onClick={() => !isEditing && setShowOrderForm(true)}
+                >
+                  {content.ctaText || "Claim Offer Now"}
+                </Button>
+              </div>
+            )}
           </CardContent>
-          <CardFooter>
-            <Button size="lg" className="w-full text-lg">{content.ctaText || "Claim Offer Now"}</Button>
-          </CardFooter>
         </Card>
       </div>
     </section>

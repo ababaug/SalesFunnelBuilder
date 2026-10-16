@@ -38,7 +38,7 @@ The Prisma schema includes models for:
 - [x] Phase 4 - Dashboard and funnel wizard
 - [x] Phase 5 - AI generation engine
 - [x] Phase 6 - Funnel renderer and editor
-- [ ] Phase 7 - Leads, orders, and checkout
+- [x] Phase 7 - Leads, orders, and checkout
 - [ ] Phase 8 - Publishing and domains
 - [ ] Phase 9 - Analytics and optimization
 - [ ] Phase 10 - Billing and administration

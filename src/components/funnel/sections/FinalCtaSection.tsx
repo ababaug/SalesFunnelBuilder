@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
+import { LeadCaptureForm } from "../LeadCaptureForm";
 
-export function FinalCtaSection({ content, isEditing }: { content: any; isEditing?: boolean }) {
+export function FinalCtaSection({ content, isEditing, funnelId }: { content: any; isEditing?: boolean; funnelId?: string }) {
   return (
     <section className="w-full py-20 bg-primary text-primary-foreground relative group text-center">
       {isEditing && (
@@ -15,9 +16,16 @@ export function FinalCtaSection({ content, isEditing }: { content: any; isEditin
         <p className="mx-auto max-w-[600px] text-primary-foreground/80 md:text-xl mb-8">
           {content.subheadline || "Don't wait any longer."}
         </p>
-        <Button size="lg" variant="secondary" className="text-lg px-8">
-          {content.ctaText || "Buy Now"}
-        </Button>
+
+        {isEditing ? (
+           <Button size="lg" variant="secondary" className="text-lg px-8">
+             {content.ctaText || "Buy Now"}
+           </Button>
+        ) : (
+          <div className="mt-8 bg-card/10 p-6 rounded-xl inline-block w-full max-w-md">
+            <LeadCaptureForm funnelId={funnelId || ""} ctaText={content.ctaText} />
+          </div>
+        )}
       </div>
     </section>
   );
