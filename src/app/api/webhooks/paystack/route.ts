@@ -7,14 +7,17 @@ export async function POST(req: Request) {
     const rawBody = await req.text();
     const signature = req.headers.get("x-paystack-signature");
 
+    if (!signature) {
+       return new NextResponse("Missing signature", { status: 400 });
+    }
+
     // Verify Paystack signature
     const secret = process.env.PAYSTACK_SECRET_KEY || "test_secret";
     const hash = crypto.createHmac('sha512', secret).update(rawBody).digest('hex');
 
-    // In production, we would enforce this check:
-    // if (hash !== signature) {
-    //   return new NextResponse("Invalid signature", { status: 400 });
-    // }
+    if (hash !== signature) {
+       return new NextResponse("Invalid signature", { status: 400 });
+    }
 
     const body = JSON.parse(rawBody);
 
