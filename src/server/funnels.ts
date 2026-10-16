@@ -46,7 +46,7 @@ export async function getFunnel(id: string) {
 
     if (!workspaceMember) return null;
 
-    const funnel = await prisma.funnel.findUnique({
+    const funnel = await prisma.funnel.findFirst({
       where: {
         id,
         workspaceId: workspaceMember.workspaceId,
@@ -72,13 +72,8 @@ export async function saveFunnelDescription(id: string, description: string) {
         if (!workspaceMember) return { error: "Unauthorized workspace" };
 
         await prisma.funnel.update({
-          where: {
-            id,
-            workspaceId: workspaceMember.workspaceId,
-          },
-          data: {
-            description
-          }
+          where: { id },
+          data: { description }
         });
 
         return { success: true };
@@ -86,4 +81,39 @@ export async function saveFunnelDescription(id: string, description: string) {
         console.error(error);
         return { error: "Failed to autosave" };
       }
+}
+
+export async function updateFunnelSectionContent(sectionId: string, content: any) {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.id) return { error: "Unauthorized" };
+
+        const workspaceMember = await prisma.workspaceMember.findFirst({
+            where: { userId: session.user.id },
+        });
+
+        if (!workspaceMember) return { error: "Unauthorized workspace" };
+
+        // Ensure user owns this section
+        const section = await prisma.funnelSection.findUnique({
+            where: { id: sectionId },
+            include: { funnelVersion: { include: { funnel: true } } }
+        });
+
+        if (!section || section.funnelVersion.funnel.workspaceId !== workspaceMember.workspaceId) {
+             return { error: "Not found or unauthorized" };
+        }
+
+        const updatedSection = await prisma.funnelSection.update({
+            where: { id: sectionId },
+            data: { content: content as any }
+        });
+
+        revalidatePath(`/dashboard/funnels/${section.funnelVersion.funnel.id}/editor`);
+        return { success: true, section: updatedSection };
+
+    } catch (error) {
+        console.error("Update section error:", error);
+        return { error: "Failed to update section" };
+    }
 }

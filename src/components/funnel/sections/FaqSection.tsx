@@ -1,6 +1,4 @@
-import { Button } from "@/components/ui/button";
-
-export function FaqSection({ content, isEditing }: { content: any; isEditing?: boolean }) {
+export function FaqSection({ content }: { content: any }) {
   const faqs = content.questions || [
     { question: "Question 1?", answer: "Answer 1." },
     { question: "Question 2?", answer: "Answer 2." },
@@ -8,11 +6,6 @@ export function FaqSection({ content, isEditing }: { content: any; isEditing?: b
 
   return (
     <section className="w-full py-12 md:py-24 bg-muted/10 relative group">
-      {isEditing && (
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-           <Button variant="outline" size="sm">Edit Section</Button>
-        </div>
-      )}
       <div className="container px-4 md:px-6 mx-auto max-w-3xl">
         <h2 className="text-3xl font-bold tracking-tighter text-center mb-12">
           {content.headline || "Frequently Asked Questions"}

@@ -1,13 +1,8 @@
 import { Button } from "@/components/ui/button";
 
-export function HeroSection({ content, isEditing }: { content: any; isEditing?: boolean }) {
+export function HeroSection({ content }: { content: any }) {
   return (
     <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 relative overflow-hidden group">
-      {isEditing && (
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-           <Button variant="outline" size="sm">Edit Section</Button>
-        </div>
-      )}
       <div className="container px-4 md:px-6 mx-auto text-center">
         <div className="flex flex-col items-center space-y-4">
           <div className="space-y-2">

@@ -20,7 +20,7 @@ export default async function FunnelEditorPage({ params }: { params: Promise<{ i
 
   if (!workspaceMember) redirect("/dashboard");
 
-  const funnel = await prisma.funnel.findUnique({
+  const funnel = await prisma.funnel.findFirst({
     where: {
       id: resolvedParams.id,
       workspaceId: workspaceMember.workspaceId,

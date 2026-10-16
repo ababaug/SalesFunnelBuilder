@@ -1,21 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { OrderForm } from "../OrderForm";
-import { useState } from "react";
 
-export function OfferSection({ content, isEditing, funnelId }: { content: any; isEditing?: boolean; funnelId?: string }) {
+export function OfferSection({ content, funnelId }: { content: any; funnelId?: string }) {
   const price = content.price ?? 99;
   const originalPrice = content.originalPrice ?? 199;
   const currency = content.currency || "$";
-  const [showOrderForm, setShowOrderForm] = useState(false);
 
   return (
     <section className="w-full py-12 md:py-24 relative group bg-muted/10">
-      {isEditing && (
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-           <Button variant="outline" size="sm">Edit Section</Button>
-        </div>
-      )}
       <div className="container px-4 md:px-6 mx-auto flex justify-center">
         <Card className="w-full max-w-lg border-primary/50 shadow-lg relative overflow-hidden">
           <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-4 py-1 rounded-bl-lg font-medium text-sm">
@@ -37,27 +30,14 @@ export function OfferSection({ content, isEditing, funnelId }: { content: any; i
               </p>
             )}
 
-            {!isEditing && showOrderForm ? (
-              <OrderForm
-                funnelId={funnelId || ""}
-                productName={content.headline || "Offer"}
-                price={price}
-                currency={currency}
-                ctaText={content.ctaText}
-              />
-            ) : null}
+            <OrderForm
+              funnelId={funnelId || ""}
+              productName={content.headline || "Offer"}
+              price={price}
+              currency={currency}
+              ctaText={content.ctaText}
+            />
 
-            {(!showOrderForm || isEditing) && (
-              <div className="w-full mt-6">
-                <Button
-                  size="lg"
-                  className="w-full text-lg h-14"
-                  onClick={() => !isEditing && setShowOrderForm(true)}
-                >
-                  {content.ctaText || "Claim Offer Now"}
-                </Button>
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>

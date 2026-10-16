@@ -5,6 +5,11 @@ import { FeaturesSection } from "./sections/FeaturesSection";
 import { OfferSection } from "./sections/OfferSection";
 import { FaqSection } from "./sections/FaqSection";
 import { FinalCtaSection } from "./sections/FinalCtaSection";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { useState } from "react";
+import { updateFunnelSectionContent } from "@/server/funnels";
 
 interface FunnelRendererProps {
   funnelId?: string;
@@ -12,12 +17,70 @@ interface FunnelRendererProps {
   isEditing?: boolean;
 }
 
+function EditableSectionWrapper({
+  section,
+  children,
+  isEditing
+}: {
+  section: any,
+  children: React.ReactNode,
+  isEditing: boolean
+}) {
+  const [content, setContent] = useState(JSON.stringify(section.content, null, 2));
+  const [isSaving, setIsSaving] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const parsed = JSON.parse(content);
+      await updateFunnelSectionContent(section.id, parsed);
+      setIsOpen(false);
+      // Let server action revalidate the page
+    } catch (e) {
+      alert("Invalid JSON content");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (!isEditing) return <>{children}</>;
+
+  return (
+    <div className="relative group">
+      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-50">
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <DialogTrigger render={<Button variant="secondary" size="sm">Edit Section Content</Button>} />
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Edit {section.type} Content</DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+              <Textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="h-64 font-mono text-sm"
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
+              <Button onClick={handleSave} disabled={isSaving}>
+                {isSaving ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+      {children}
+    </div>
+  );
+}
+
 export function FunnelRenderer({ funnelId, sections, isEditing = false }: FunnelRendererProps) {
   if (!sections || sections.length === 0) {
     return <div className="p-12 text-center text-muted-foreground">No content generated yet.</div>;
   }
 
-  // Sort sections by their 'order' field just in case
   const sortedSections = [...sections].sort((a, b) => a.order - b.order);
 
   return (
@@ -26,28 +89,35 @@ export function FunnelRenderer({ funnelId, sections, isEditing = false }: Funnel
         const type = section.type;
         const content = section.content;
 
+        let renderedSection = null;
         switch (type) {
           case "HERO":
-            return <HeroSection key={section.id} content={content} isEditing={isEditing} />;
+            renderedSection = <HeroSection content={content} />; break;
           case "PROBLEM":
-            return <ProblemSection key={section.id} content={content} isEditing={isEditing} />;
+            renderedSection = <ProblemSection content={content} />; break;
           case "BENEFITS":
-            return <BenefitsSection key={section.id} content={content} isEditing={isEditing} />;
+            renderedSection = <BenefitsSection content={content} />; break;
           case "FEATURES":
-            return <FeaturesSection key={section.id} content={content} isEditing={isEditing} />;
+            renderedSection = <FeaturesSection content={content} />; break;
           case "OFFER":
-            return <OfferSection key={section.id} content={content} isEditing={isEditing} funnelId={funnelId} />;
+            renderedSection = <OfferSection content={content} funnelId={funnelId} />; break;
           case "FAQ":
-            return <FaqSection key={section.id} content={content} isEditing={isEditing} />;
+            renderedSection = <FaqSection content={content} />; break;
           case "FINAL_CTA":
-            return <FinalCtaSection key={section.id} content={content} isEditing={isEditing} funnelId={funnelId} />;
+            renderedSection = <FinalCtaSection content={content} funnelId={funnelId} />; break;
           default:
-            return (
-              <div key={section.id} className="p-4 border border-dashed border-red-500 m-4 text-center">
+            renderedSection = (
+              <div className="p-4 border border-dashed border-red-500 m-4 text-center">
                 Unknown Section Type: {type}
               </div>
             );
         }
+
+        return (
+          <EditableSectionWrapper key={section.id} section={section} isEditing={isEditing}>
+            {renderedSection}
+          </EditableSectionWrapper>
+        );
       })}
     </div>
   );

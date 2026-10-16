@@ -1,7 +1,6 @@
-import { Button } from "@/components/ui/button";
 import { Star } from "lucide-react";
 
-export function FeaturesSection({ content, isEditing }: { content: any; isEditing?: boolean }) {
+export function FeaturesSection({ content }: { content: any }) {
   const features = content.features || [
     { title: "Feature 1", description: "Detail 1" },
     { title: "Feature 2", description: "Detail 2" },
@@ -9,11 +8,6 @@ export function FeaturesSection({ content, isEditing }: { content: any; isEditin
 
   return (
     <section className="w-full py-12 md:py-24 bg-muted/30 relative group">
-      {isEditing && (
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-           <Button variant="outline" size="sm">Edit Section</Button>
-        </div>
-      )}
       <div className="container px-4 md:px-6 mx-auto">
         <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl text-center mb-12">
           {content.headline || "Features"}
