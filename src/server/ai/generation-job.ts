@@ -15,6 +15,18 @@ export async function initiateGenerationJob(funnelId: string, inputData: any) {
 
   if (!workspaceMember) throw new Error("Unauthorized workspace");
 
+  // Verify the funnel belongs to the user's workspace
+  const funnel = await prisma.funnel.findFirst({
+    where: {
+      id: funnelId,
+      workspaceId: workspaceMember.workspaceId
+    }
+  });
+
+  if (!funnel) {
+    throw new Error("Funnel not found or unauthorized");
+  }
+
   // Create the job record
   const job = await prisma.funnelGenerationJob.create({
     data: {
@@ -24,9 +36,8 @@ export async function initiateGenerationJob(funnelId: string, inputData: any) {
     },
   });
 
-  // Start the background process (in a real app, use a queue like Ingest or BullMQ)
-  // For Vercel Serverless, we can trigger this asynchronously, but for local dev this is fine
-  processJob(job.id, funnelId, inputData).catch(console.error);
+  // Start the background process
+  processJob(job.id, funnel.id, inputData).catch(console.error);
 
   return { jobId: job.id };
 }
@@ -44,22 +55,23 @@ async function processJob(jobId: string, funnelId: string, inputData: any) {
     const version = await prisma.funnelVersion.create({
       data: {
         funnelId: funnelId,
-        version: 1, // Simplified for Phase 5
+        version: 1,
       }
     });
 
     // 3. Create Sections
-    for (let i = 0; i < generatedContent.sections.length; i++) {
-      const section = generatedContent.sections[i];
-      await prisma.funnelSection.create({
+    const sectionPromises = generatedContent.sections.map((section, index) => {
+      return prisma.funnelSection.create({
         data: {
           funnelVersionId: version.id,
           type: section.type,
-          order: i,
+          order: index,
           content: section as any,
         }
       });
-    }
+    });
+
+    await Promise.all(sectionPromises);
 
     // Update job status
     await prisma.funnelGenerationJob.update({

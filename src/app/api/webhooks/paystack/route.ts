@@ -11,8 +11,13 @@ export async function POST(req: Request) {
        return new NextResponse("Missing signature", { status: 400 });
     }
 
+    const secret = process.env.PAYSTACK_SECRET_KEY;
+    if (!secret) {
+        console.error("PAYSTACK_SECRET_KEY is not configured.");
+        return new NextResponse("Server Configuration Error", { status: 500 });
+    }
+
     // Verify Paystack signature
-    const secret = process.env.PAYSTACK_SECRET_KEY || "test_secret";
     const hash = crypto.createHmac('sha512', secret).update(rawBody).digest('hex');
 
     if (hash !== signature) {

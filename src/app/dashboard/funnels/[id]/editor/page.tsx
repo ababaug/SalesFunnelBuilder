@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { FunnelEditor } from "@/components/editor/FunnelEditor";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default async function FunnelEditorPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
@@ -54,7 +56,9 @@ export default async function FunnelEditorPage({ params }: { params: Promise<{ i
           <span className="px-2 py-1 text-xs font-medium bg-muted rounded-md text-muted-foreground">Draft</span>
         </div>
         <div className="flex items-center space-x-2">
-          {/* We'll pass standard publishing controls here in the future */}
+          <Link href={`/dashboard/funnels/${funnel.id}/publish`}>
+            <Button size="sm">Publish</Button>
+          </Link>
         </div>
       </div>
 
