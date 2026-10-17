@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { generateFunnelContent } from "./index";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { after } from "next/server";
 
 export async function initiateGenerationJob(funnelId: string, inputData: any) {
   const session = await getServerSession(authOptions);
@@ -34,7 +35,9 @@ export async function initiateGenerationJob(funnelId: string, inputData: any) {
     },
   });
 
-  processJob(job.id, funnel.id, inputData).catch(console.error);
+  after(async () => {
+    await processJob(job.id, funnel.id, inputData);
+  });
 
   return { jobId: job.id };
 }

@@ -1,4 +1,5 @@
 "use client";
+import { TrackingScript } from "../TrackingScript";
 import { HeroSection } from "./sections/HeroSection";
 import { ProblemSection } from "./sections/ProblemSection";
 import { BenefitsSection } from "./sections/BenefitsSection";
@@ -90,6 +91,7 @@ export function FunnelRenderer({ funnelId, sections, isEditing = false }: Funnel
 
   return (
     <div className="w-full flex flex-col min-h-screen bg-background">
+      {!isEditing && funnelId && <TrackingScript funnelId={funnelId} />}
       {sortedSections.map((section) => {
         const type = section.type;
         // safely parse the sqlite string representation back to an object

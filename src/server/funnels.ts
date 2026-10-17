@@ -71,6 +71,12 @@ export async function saveFunnelDescription(id: string, description: string) {
 
         if (!workspaceMember) return { error: "Unauthorized workspace" };
 
+        const funnel = await prisma.funnel.findFirst({
+            where: { id, workspaceId: workspaceMember.workspaceId }
+        });
+
+        if (!funnel) return { error: "Not found or unauthorized" };
+
         await prisma.funnel.update({
           where: { id },
           data: { description }

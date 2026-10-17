@@ -23,3 +23,4 @@
  GET /api/auth/csrf 200 in 31ms (next.js: 19ms, application-code: 12ms)
  POST /api/auth/callback/credentials 200 in 189ms (next.js: 4ms, application-code: 185ms)
  GET /dashboard 200 in 203ms (next.js: 65ms, application-code: 138ms)
+✓ Compiled in 1191ms
