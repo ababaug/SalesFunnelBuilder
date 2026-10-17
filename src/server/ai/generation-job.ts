@@ -15,7 +15,6 @@ export async function initiateGenerationJob(funnelId: string, inputData: any) {
 
   if (!workspaceMember) throw new Error("Unauthorized workspace");
 
-  // Verify the funnel belongs to the user's workspace
   const funnel = await prisma.funnel.findFirst({
     where: {
       id: funnelId,
@@ -27,16 +26,14 @@ export async function initiateGenerationJob(funnelId: string, inputData: any) {
     throw new Error("Funnel not found or unauthorized");
   }
 
-  // Create the job record
   const job = await prisma.funnelGenerationJob.create({
     data: {
       workspaceId: workspaceMember.workspaceId,
       status: "PROCESSING",
-      inputData: inputData,
+      inputData: JSON.stringify(inputData),
     },
   });
 
-  // Start the background process
   processJob(job.id, funnel.id, inputData).catch(console.error);
 
   return { jobId: job.id };
@@ -44,14 +41,12 @@ export async function initiateGenerationJob(funnelId: string, inputData: any) {
 
 async function processJob(jobId: string, funnelId: string, inputData: any) {
   try {
-    // 1. Call AI
     const generatedContent = await generateFunnelContent(inputData);
 
     if (!generatedContent) {
       throw new Error("AI returned null or failed schema validation.");
     }
 
-    // 2. Save result to Funnel as a new Version
     const version = await prisma.funnelVersion.create({
       data: {
         funnelId: funnelId,
@@ -59,30 +54,27 @@ async function processJob(jobId: string, funnelId: string, inputData: any) {
       }
     });
 
-    // 3. Create Sections
     const sectionPromises = generatedContent.sections.map((section, index) => {
       return prisma.funnelSection.create({
         data: {
           funnelVersionId: version.id,
           type: section.type,
           order: index,
-          content: section as any,
+          content: JSON.stringify(section),
         }
       });
     });
 
     await Promise.all(sectionPromises);
 
-    // Update job status
     await prisma.funnelGenerationJob.update({
       where: { id: jobId },
       data: {
         status: "COMPLETED",
-        resultData: generatedContent as any,
+        resultData: JSON.stringify(generatedContent),
       }
     });
 
-    // Mark Funnel as generated
     await prisma.funnel.update({
       where: { id: funnelId },
       data: { status: "GENERATED" }

@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model User {
@@ -30,12 +30,12 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -79,7 +79,7 @@ model WorkspaceMember {
   id          String   @id @default(cuid())
   workspaceId String
   userId      String
-  role        Role     @default(MEMBER)
+  role        String   @default("MEMBER")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -89,25 +89,19 @@ model WorkspaceMember {
   @@unique([workspaceId, userId])
 }
 
-enum Role {
-  OWNER
-  ADMIN
-  MEMBER
-  VIEWER
-}
 
 model Subscription {
-  id                   String   @id @default(cuid())
+  id                   String    @id @default(cuid())
   workspaceId          String
   planId               String
   status               String
   currentPeriodStart   DateTime
   currentPeriodEnd     DateTime
-  cancelAtPeriodEnd    Boolean  @default(false)
+  cancelAtPeriodEnd    Boolean   @default(false)
   stripeCustomerId     String?
-  stripeSubscriptionId String?  @unique
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  stripeSubscriptionId String?   @unique
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   plan      Plan      @relation(fields: [planId], references: [id])
@@ -141,14 +135,14 @@ model PlanEntitlement {
 }
 
 model Invoice {
-  id              String   @id @default(cuid())
-  subscriptionId  String
-  amount          Int
-  currency        String
-  status          String
-  stripeInvoiceId String?  @unique
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             String   @id @default(cuid())
+  subscriptionId String
+  amount         Int
+  currency       String
+  status         String
+  stripeInvoiceId String? @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
   payments     Payment[]
@@ -178,8 +172,8 @@ model Funnel {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  workspace Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  domain    Domain?         @relation(fields: [domainId], references: [id])
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  domain    Domain?   @relation(fields: [domainId], references: [id])
   versions  FunnelVersion[]
   leads     Lead[]
   orders    Order[]
@@ -204,7 +198,7 @@ model FunnelSection {
   funnelVersionId String
   type            String
   order           Int
-  content         Json
+  content         String
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -218,7 +212,7 @@ model FunnelTemplate {
   description String?
   category    String
   previewUrl  String?
-  content     Json
+  content     String
   isGlobal    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -230,8 +224,8 @@ model FunnelGenerationJob {
   id          String   @id @default(cuid())
   workspaceId String
   status      String
-  inputData   Json
-  resultData  Json?
+  inputData   String
+  resultData  String?
   error       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -286,8 +280,8 @@ model Lead {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  workspace Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  funnel    Funnel?       @relation(fields: [funnelId], references: [id], onDelete: SetNull)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  funnel    Funnel?   @relation(fields: [funnelId], references: [id], onDelete: SetNull)
   consents  LeadConsent[]
 }
 
@@ -304,21 +298,21 @@ model LeadConsent {
 }
 
 model Order {
-  id            String   @id @default(cuid())
-  workspaceId   String
-  funnelId      String?
-  customerName  String
+  id          String   @id @default(cuid())
+  workspaceId String
+  funnelId    String?
+  customerName String
   customerEmail String?
   customerPhone String?
-  status        String   @default("PENDING")
-  totalAmount   Int
-  currency      String
+  status      String   @default("PENDING")
+  totalAmount Int
+  currency    String
   paymentMethod String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  workspace Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  funnel    Funnel?     @relation(fields: [funnelId], references: [id], onDelete: SetNull)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  funnel    Funnel?   @relation(fields: [funnelId], references: [id], onDelete: SetNull)
   items     OrderItem[]
 }
 
@@ -346,8 +340,8 @@ model Product {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  workspace  Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  variants   ProductVariant[]
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  variants  ProductVariant[]
   orderItems OrderItem[]
 }
 
@@ -367,33 +361,33 @@ model AnalyticsEvent {
   id          String   @id @default(cuid())
   workspaceId String
   name        String
-  properties  Json?
+  properties  String?
   createdAt   DateTime @default(now())
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 }
 
 model Experiment {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   workspaceId String
   name        String
-  status      String    @default("DRAFT")
+  status      String   @default("DRAFT")
   startDate   DateTime?
   endDate     DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  workspace Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   variants  ExperimentVariant[]
 }
 
 model ExperimentVariant {
-  id                String   @id @default(cuid())
-  experimentId      String
-  name              String
+  id           String   @id @default(cuid())
+  experimentId String
+  name         String
   trafficAllocation Int
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   experiment Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
 }
@@ -402,7 +396,7 @@ model Integration {
   id          String   @id @default(cuid())
   workspaceId String
   provider    String
-  config      Json
+  config      String
   status      String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -415,7 +409,7 @@ model WebhookEvent {
   workspaceId String
   provider    String
   eventType   String
-  payload     Json
+  payload     String
   status      String
   createdAt   DateTime @default(now())
 
@@ -440,7 +434,7 @@ model AuditLog {
   action     String
   resource   String
   resourceId String?
-  details    Json?
+  details    String?
   ipAddress  String?
   createdAt  DateTime @default(now())
 
@@ -450,7 +444,7 @@ model AuditLog {
 model PlatformSetting {
   id        String   @id @default(cuid())
   key       String   @unique
-  value     Json
+  value     String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

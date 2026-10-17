@@ -1,0 +1,25 @@
+
+> project@0.1.0 dev
+> next dev
+
+▲ Next.js 16.4.1 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+- Environments: .env
+✓ Ready in 2.8s
+✓ Running next.config.ts took 89ms
+- Cache Components enabled
+- Partial Prefetching enabled
+
+○ Compiling / ...
+ GET / 200 in 1111ms (next.js: 386ms, application-code: 725ms)
+ GET /register 200 in 197ms (next.js: 23ms, application-code: 174ms)
+ GET / 200 in 94ms (next.js: 2ms, application-code: 92ms)
+ GET /register 200 in 71ms (next.js: 2ms, application-code: 69ms)
+ POST /register 200 in 269ms (next.js: 3ms, application-code: 266ms)
+  └─ ƒ registerUser({"email":"test2@test.com","name":"Test User","password":"password123"}) in 214ms src/server/actions.ts
+ GET /login?registered=true 200 in 57ms (next.js: 13ms, application-code: 44ms)
+ GET /api/auth/providers 200 in 1314ms (next.js: 1222ms, application-code: 92ms)
+ GET /api/auth/csrf 200 in 31ms (next.js: 19ms, application-code: 12ms)
+ POST /api/auth/callback/credentials 200 in 189ms (next.js: 4ms, application-code: 185ms)
+ GET /dashboard 200 in 203ms (next.js: 65ms, application-code: 138ms)
